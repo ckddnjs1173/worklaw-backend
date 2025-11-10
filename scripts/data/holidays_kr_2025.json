@@ -1,0 +1,4 @@
+[
+  { "date": "2025-01-01", "name": "신정", "type": "public", "is_public": true },
+  { "date": "2025-02-28", "name": "예시 휴일", "type": "anniversary", "is_public": false }
+]

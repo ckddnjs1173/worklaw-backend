@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+python-dotenv
+SQLAlchemy
+alembic
+pydantic
+passlib[bcrypt]
+bcrypt==4.1.3
+python-jose[cryptography]
+httpx
+requests
+
+# tests
+pytest
+pytest-asyncio

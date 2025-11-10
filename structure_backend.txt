@@ -1,0 +1,38 @@
+﻿worklaw-backend (base: C:\Users\UserK\Desktop\myproject\worklaw\worklaw-backend)
+[D] alembic
+[D] database
+[D] models
+[D] routers
+[D] schemas
+[D] scripts
+[D] tests
+[D] utils
+ -  alembic.ini
+ -  docker-compose.yml
+ -  Dockerfile
+ -  main.py
+ -  pytest.ini
+ -  README_ALEMBIC.md
+ -  requirements.txt
+ -  test_worklaw.db
+ -  worklaw.db
+   -  script.py.mako
+   -  connection.py
+   -  __init__.py
+   -  law.py
+   -  wage.py
+   -  __init__.py
+   -  auth.py
+   -  law.py
+   -  metadata.py
+   -  metadata_admin.py
+   -  __init__.py
+   -  wage_schema.py
+   -  __init__.py
+   -  ingest_labor_laws.py
+   -  conftest.py
+   -  test_auth.py
+   -  test_health_and_wage.py
+   -  test_law_endpoints.py
+   -  config.py
+   -  security.py

@@ -1,0 +1,18 @@
+version: "3.9"
+services:
+  backend:
+    build: .
+    container_name: worklaw-backend
+    ports:
+      - "8000:8000"
+    environment:
+      ENV: "prod"
+      DATABASE_URL: "sqlite:///./worklaw.db"
+      ADMIN_USERNAME: "admin"
+      ADMIN_PASSWORD_HASH: "$2b$12$2aq7aA8v3l7mTO7h2vKbMOB8pZbYFzT3bM0n7U6j/1WFm8GQxT9A6"
+      JWT_SECRET: "change-me"
+      JWT_EXPIRE_MIN: "120"
+      CORS_ORIGINS: "http://localhost:3000,http://127.0.0.1:3000"
+      ENABLE_HSTS: "false"
+    volumes:
+      - ./worklaw.db:/app/worklaw.db
