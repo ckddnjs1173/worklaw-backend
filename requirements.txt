@@ -13,3 +13,5 @@ requests
 # tests
 pytest
 pytest-asyncio
+
+uvicorn[standard]
