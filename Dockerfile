@@ -1,23 +1,31 @@
-# syntax=docker/dockerfile:1
+# ---- Base image ----
 FROM python:3.13-slim
 
+# ---- OS deps (optional but useful) ----
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# ---- Workdir ----
+WORKDIR /app
+
+# ---- Copy metadata first for better layer caching ----
+COPY requirements.txt ./
+
+# ---- Python deps ----
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# ---- Copy app source ----
+COPY . .
+
+# ---- Environment sane defaults ----
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-WORKDIR /app
-
-# 시스템 deps (sqlite, gcc 필요 시)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential sqlite3 ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
-
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt \
-    && pip install --no-cache-dir "bcrypt==4.1.3" "passlib==1.7.4"
-
-COPY . .
-
-# .env는 컨테이너 외부에서 주입 권장
+# ---- Expose (informational) ----
 EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# ---- Start command (Railway uses $PORT) ----
+# Alembic 마이그레이션 후 Uvicorn 기동
+CMD ["sh","-c","alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port $PORT"]
