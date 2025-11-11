@@ -46,7 +46,7 @@ class Settings:
 
     def __init__(self) -> None:
         # Railway Variables가 있으면 그것을 신뢰(로컬 기본: dev)
-        self.ENV  = os.getenv("ENV", "dev")
+        self.ENV = os.getenv("ENV") or os.getenv("APP_ENV") or "dev"
         self.HOST = os.getenv("HOST", "0.0.0.0")
         self.PORT = int(os.getenv("PORT", "8000"))
 
