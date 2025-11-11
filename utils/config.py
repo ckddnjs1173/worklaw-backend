@@ -1,15 +1,36 @@
-import os
+# utils/config.py
+from __future__ import annotations
+import os, json
 from typing import List
 
-def get_env(key: str, default: str | None = None) -> str:
+def _require(key: str, default: str | None = None) -> str:
     val = os.getenv(key, default)
     if val is None:
         raise RuntimeError(f"Missing required env: {key}")
     return val
 
-def parse_csv_env(key: str, default: str = "") -> List[str]:
-    raw = os.getenv(key, default)
-    return [x.strip() for x in raw.split(",") if x.strip()]
+def _parse_cors(v: str | None, fallback: List[str]) -> List[str]:
+    if not v:
+        return fallback
+    v = v.strip()
+    # JSON 배열 문자열(["http://..."])을 우선 지원
+    if v.startswith("["):
+        try:
+            parsed = json.loads(v)
+            if isinstance(parsed, list):
+                return [str(x).strip() for x in parsed if str(x).strip()]
+        except Exception:
+            pass
+    # 콤마로 구분된 문자열도 허용
+    return [s.strip() for s in v.split(",") if s.strip()]
+
+# ⚠️ 로컬에서만 .env 적용, 호스팅(Railway 등)에서는 절대 덮어쓰지 않음
+if not os.getenv("RAILWAY_ENVIRONMENT"):
+    try:
+        from dotenv import load_dotenv  # 선택적 의존성
+        load_dotenv(override=False)
+    except Exception:
+        pass
 
 class Settings:
     ENV: str
@@ -24,15 +45,28 @@ class Settings:
     ENABLE_HSTS: bool
 
     def __init__(self) -> None:
-        self.ENV = os.getenv("ENV", "dev")
+        # Railway Variables가 있으면 그것을 신뢰(로컬 기본: dev)
+        self.ENV  = os.getenv("ENV", "dev")
         self.HOST = os.getenv("HOST", "0.0.0.0")
         self.PORT = int(os.getenv("PORT", "8000"))
-        self.DATABASE_URL = get_env("DATABASE_URL", "sqlite:///./worklaw.db")
-        self.ADMIN_USERNAME = get_env("ADMIN_USERNAME", "admin")
-        self.ADMIN_PASSWORD_HASH = get_env("ADMIN_PASSWORD_HASH", "")
-        self.JWT_SECRET = get_env("JWT_SECRET", "change-me")
-        self.JWT_EXPIRE_MIN = int(os.getenv("JWT_EXPIRE_MIN", "120"))
-        self.CORS_ORIGINS = parse_csv_env("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
+
+        self.DATABASE_URL        = _require("DATABASE_URL", "sqlite:///./worklaw.db")
+        self.ADMIN_USERNAME      = _require("ADMIN_USERNAME", "admin")
+        self.ADMIN_PASSWORD_HASH = _require("ADMIN_PASSWORD_HASH", "")
+        self.JWT_SECRET          = _require("JWT_SECRET", "change-me")
+        self.JWT_EXPIRE_MIN      = int(os.getenv("JWT_EXPIRE_MIN", "120"))
+
+        # JSON 배열 또는 콤마 구분 문자열 모두 지원
+        cors_raw = os.getenv(
+            "CORS_ORIGINS",
+            '["http://localhost:3000","https://worklaw-frontend-staging.vercel.app"]'
+        )
+        self.CORS_ORIGINS = _parse_cors(
+            cors_raw,
+            ["http://localhost:3000", "https://worklaw-frontend-staging.vercel.app"],
+        )
+
+        # prod 에서만 true 권장
         self.ENABLE_HSTS = os.getenv("ENABLE_HSTS", "false").lower() == "true"
 
 settings = Settings()
